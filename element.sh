@@ -2,13 +2,11 @@
 
 PSQL="psql --username=freecodecamp --dbname=periodic_table -t --no-align -c"
 
-echo -e "Please provide an element as an argument."
-
 if [[ $1 ]]
 then
 {
   ## Check if it is number
-  if [[ $1 =~ ^[0-9]+$ ]]
+  if ! [[ $1 =~ ^[0-9]+$ ]]
   then
     ## Do a query for string
   ELEMENT=$($PSQL "SELECT atomic_number,symbol,name,type,atomic_mass,melting_point_celsius,boiling_point_celsius FROM elements INNER JOIN properties USING(atomic_number) INNER JOIN types USING(type_id) WHERE atomic_number = $1 ")
@@ -23,18 +21,17 @@ then
   then
     echo "\nI could not find that element in the database."
   else
-
-  ## unwrap the output
-
-  echo "$ELEMENT" | while read ATOMIC_NUMBER BAR SYMBOL BAR NAME BAR TYPE BAR ATOMIC_MASS BAR MELTING BAR BOILING
-  do
-    echo "\nThe element with atomic number $ATOMIC_NUMBER is $NAME ($SYMBOL). It's a $TYPE, with a mass of $ATOMIC_MASS amu. $NAME has a melting point of $MELTING celsius and a boiling point of $BOILING celsius."
-  done
+  ## Create an array
+   ${element_array[@]}
+   ## unwrap the output
+    IFS='|' read -r -a element_array <<<"$ELEMENT"
+    #echo ${element_array[4]}
+    echo - "The element with atomic number ${element_array[0]} is ${element_array[2]} (${element_array[1]}). It's a ${element_array[3]}, with a mass of ${element_array[4]} amu. ${element_array[2]} has a melting point of ${element_array[5]} celsius and a boiling point of ${element_array[6]} celsius."
 
   fi
 
 }
 else
-  echo -e "Please provide an element as an argument."
+  echo  "Please provide an element as an argument."
 fi
 
